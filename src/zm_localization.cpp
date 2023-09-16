@@ -35,7 +35,7 @@ zmLocalization::zmLocalization(std::string name) : nh_("~")
 	{
 		std::string ScanTopicName;
 		ScanTopicName = "/scan_" + std::to_string(i);
-		scanSub[i] = nh_.subscribe<sensor_msgs::LaserScan>(ScanTopicName.c_str(), 10, boost::bind(&zmLocalization::ScanCB, this, _1, ScanTopicName.c_str()));
+		scanSub[i] = nh_.subscribe<sensor_msgs::LaserScan>(ScanTopicName.c_str(), 10, boost::bind(&zmLocalization::ScanCB, this, _1, ScanTopicName));
 	}
 
     initialPoseSub = nh_.subscribe("/initialpose", 1, &zmLocalization::InitialPoseCB, this);
