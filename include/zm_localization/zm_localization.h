@@ -37,7 +37,7 @@ class zmLocalization
 
     private:
         void MapCB(const nav_msgs::OccupancyGrid::ConstPtr& map);
-        void ScanCB(const sensor_msgs::LaserScan::ConstPtr& scan);
+        void ScanCB(const sensor_msgs::LaserScan::ConstPtr &scan, std::string topic);
         void broadcast();
         void InitialPoseCB(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose);
         void LocalizationUpdate(const ros::TimerEvent& event);
@@ -48,7 +48,7 @@ class zmLocalization
 
         ros::NodeHandle nh_;
         ros::Subscriber initialPoseSub;
-        ros::Subscriber scanSub;
+        std::vector<ros::Subscriber> scanSub;
         ros::Subscriber mapSub;
 
         ros::Publisher mapTilePub;
@@ -77,6 +77,7 @@ class zmLocalization
         std::string baseFrame_;
         std::string odomFrame_;
         std::string mapFrame_;
+        int scanNum_;
         int mapSize_;
         int mapDownScale_;
         double mapUpdateRate_;

@@ -6,6 +6,7 @@ zmLocalization::zmLocalization(std::string name) : nh_("~")
 	nh_.param<std::string>("base_frame", baseFrame_, "base_link");
 	nh_.param<std::string>("odom_frame", odomFrame_, "odom");
 	nh_.param<std::string>("map_frame", mapFrame_, "map");
+	nh_.param<int>("scan_num", scanNum_, 1);
 	nh_.param<int>("map_size", mapSize_, 1000);
 	nh_.param<int>("map_downscale", mapDownScale_, 0);
 	nh_.param<double>("map_update_rate", mapUpdateRate_, 0.5);
@@ -29,8 +30,15 @@ zmLocalization::zmLocalization(std::string name) : nh_("~")
 	nh_.param<double>("constrain_threshold_yaw", constrainThresholdYaw_, 0.2);
 	nh_.param<double>("transform_timeout", transformTimeout_, 0.2);
 
+	scanSub.resize(scanNum_);
+	for(int i = 0; i < scanNum_; i++)
+	{
+		std::string ScanTopicName;
+		ScanTopicName = "/scan_" + std::to_string(i);
+		scanSub[i] = nh_.subscribe<sensor_msgs::LaserScan>(ScanTopicName.c_str(), 10, boost::bind(&zmLocalization::ScanCB, this, _1, ScanTopicName.c_str()));
+	}
+
     initialPoseSub = nh_.subscribe("/initialpose", 1, &zmLocalization::InitialPoseCB, this);
-	scanSub = nh_.subscribe("/scan", 10, &zmLocalization::ScanCB, this);
 	mapSub = nh_.subscribe("/map", 1, &zmLocalization::MapCB, this);
 
 	mapTilePub = nh_.advertise<nav_msgs::OccupancyGrid>("/map_tile", 1);
@@ -125,7 +133,7 @@ void zmLocalization::MapCB(const nav_msgs::OccupancyGrid::ConstPtr& map)
 	sampleStdYaw = maxSampleStdYaw_;
 }
 
-void zmLocalization::ScanCB(const sensor_msgs::LaserScan::ConstPtr& scan)
+void zmLocalization::ScanCB(const sensor_msgs::LaserScan::ConstPtr &scan, std::string topic)
 {
 	std::lock_guard<std::mutex> lock(nodeMutex_);
 
