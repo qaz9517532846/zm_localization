@@ -15,7 +15,9 @@
         <param name="solver_damping"            value="1000"/>
         <param name="solver_iterations"         value="20"/>
 
-        <remap from="scan"                      to="zm_robot_scan"/>
+        <param name="scan_num"                  value="2"/>
+        <remap from="scan_0"                    to="/sick_s30b/laser/scan0"/>
+        <remap from="scan_1"                    to="/sick_s30b/laser/scan1"/>
         <param name="sample_rate"               value="10"/>
         <param name="min_points"                value="20"/>
         <param name="update_gain"               value="0.1"/>
