@@ -64,7 +64,7 @@ Eigen::Matrix<T, 4, 4> Rotate25Z(T rad)
     Eigen::Matrix<T, 4, 4> res;
 	res.setZero();
     res(0, 0) = std::cos(rad);
-    res(0, 0) = -1 * std::sin(rad);
+    res(0, 1) = -1 * std::sin(rad);
     res(1, 0) = std::sin(rad);
     res(1, 1) = std::cos(rad);
     res(2, 2) = 1;
@@ -80,7 +80,7 @@ Eigen::Matrix<T, 4, 4> Rotate3Z(T rad)
     Eigen::Matrix<T, 4, 4> res;
 	res.setZero();
     res(0, 0) = std::cos(rad);
-    res(0, 0) = -1 * std::sin(rad);
+    res(0, 1) = -1 * std::sin(rad);
     res(1, 0) = std::sin(rad);
     res(1, 1) = std::cos(rad);
     res(2, 2) = 1;
