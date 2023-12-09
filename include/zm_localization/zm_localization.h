@@ -42,6 +42,7 @@ class zmLocalization
         void InitialPoseCB(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose);
         void LocalizationUpdate(const ros::TimerEvent& event);
         std::vector<ScanPoint_t> ConvertScan(const sensor_msgs::LaserScan::ConstPtr& scan, const Eigen::Matrix4d& odomToBase);
+        void PublishPointCloud2Msg(std::vector<ScanPoint_t> points);
         void UpdateMap();
         void UpdateLoop();
         LOCALIZATION_MODE Localization_Mode();
@@ -55,6 +56,8 @@ class zmLocalization
         ros::Publisher localPosePub;
         ros::Publisher localPose2Pub;
         ros::Publisher poseArrayPub;
+        ros::Publisher scanMergerPub;
+
 
         ros::Timer updateTimer_;
 

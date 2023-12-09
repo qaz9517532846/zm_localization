@@ -1,4 +1,8 @@
 #include <zm_localization/zm_localization.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 zmLocalization::zmLocalization(std::string name) : nh_("~")
 {
@@ -45,6 +49,7 @@ zmLocalization::zmLocalization(std::string name) : nh_("~")
 	localPosePub = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/amcl_pose", 10);
 	localPose2Pub = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/map_pose", 10);
 	poseArrayPub = nh_.advertise<geometry_msgs::PoseArray>("/particlecloud", 10);
+	scanMergerPub = nh_.advertise<sensor_msgs::PointCloud2>("/pointcloud", 1);
 
 	updateTimer_ = nh_.createTimer(ros::Rate(locUpdateRate_), &zmLocalization::LocalizationUpdate, this);
 	mapUpdateThread_ = std::thread(&zmLocalization::UpdateLoop, this);
@@ -193,6 +198,26 @@ std::vector<ScanPoint_t> zmLocalization::ConvertScan(const sensor_msgs::LaserSca
 	return points;
 }
 
+void zmLocalization::PublishPointCloud2Msg(std::vector<ScanPoint_t> points)
+{
+	// Create a PointCloud2 message
+    sensor_msgs::PointCloud2 scanMerge;
+    // Generate some example PointXYZ data
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+	for(const auto& point : points)
+	{
+		cloud.points.push_back(pcl::PointXYZ(point.x, point.y, 0.0));
+	}
+
+	// Convert PointXYZ data to PointCloud2 format
+    pcl::toROSMsg(cloud, scanMerge);
+
+	scanMerge.header.stamp = offsetTime;
+    scanMerge.header.frame_id = baseFrame_; // Set your desired frame_id
+    scanMerge.height = 1;
+	scanMergerPub.publish(scanMerge);
+}
+
 void zmLocalization::LocalizationUpdate(const ros::TimerEvent& event)
 {
 	std::lock_guard<std::mutex> lock(nodeMutex_);
@@ -232,6 +257,8 @@ void zmLocalization::LocalizationUpdate(const ros::TimerEvent& event)
 		ROS_WARN_STREAM("ZMLocalizationNode: Number of points too low: " << points.size());
 		return;
 	}
+
+	PublishPointCloud2Msg(points);
 
 	auto poseArray = boost::make_shared<geometry_msgs::PoseArray>();
 	poseArray->header.stamp = baseToOdom.stamp_;
